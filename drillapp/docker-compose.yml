@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/interview-drills
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/callback/google
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27018:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=interview-drills
+    volumes:
+      - mongo-data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - app-network
+
+  mongo-express:
+    image: mongo-express:1
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+volumes:
+  mongo-data:
+
+networks:
+  app-network:
+    driver: bridge
