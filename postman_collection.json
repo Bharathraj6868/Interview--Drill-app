@@ -1,0 +1,258 @@
+{
+	"info": {
+		"_postman_id": "interview-drills-api",
+		"name": "Interview Drills API Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"description": "API collection for Interview Drills application testing"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/api/health",
+					"host": ["{{BASE_URL}}"],
+					"path": ["api", "health"]
+				},
+				"description": "Basic health check endpoint to verify the API is running"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Drills List",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/api/drills",
+					"host": ["{{BASE_URL}}"],
+					"path": ["api", "drills"]
+				},
+				"description": "Get list of all available drills (cached endpoint)"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Drill Detail",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/api/drills/{{DRILL_ID}}",
+					"host": ["{{BASE_URL}}"],
+					"path": ["api", "drills", "{{DRILL_ID}}"]
+				},
+				"description": "Get detailed information about a specific drill including questions"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Current User",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{AUTH_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/api/me",
+					"host": ["{{BASE_URL}}"],
+					"path": ["api", "me"]
+				},
+				"description": "Get information about the currently authenticated user"
+			},
+			"response": []
+		},
+		{
+			"name": "Submit Attempt",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{AUTH_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"drillId\": \"{{DRILL_ID}}\",\n  \"answers\": [\n    {\n      \"qid\": \"js1\",\n      \"text\": \"Let has block scope, const has block scope and cannot be reassigned, var has function scope and can be reassigned.\"\n    },\n    {\n      \"qid\": \"js2\",\n      \"text\": \"Closures are functions that have access to variables in their outer scope even after the outer function has returned.\"\n    },\n    {\n      \"qid\": \"js3\",\n      \"text\": \"The this keyword refers to the object that is executing the current function. Its value depends on how the function is called.\"\n    },\n    {\n      \"qid\": \"js4\",\n      \"text\": \"== does type coercion, === does strict equality without type coercion.\"\n    },\n    {\n      \"qid\": \"js5\",\n      \"text\": \"Promises are objects representing the eventual completion or failure of an asynchronous operation.\"\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/api/attempts",
+					"host": ["{{BASE_URL}}"],
+					"path": ["api", "attempts"]
+				},
+				"description": "Submit answers for a drill attempt and get scoring results"
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Attempts",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{AUTH_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/api/attempts?limit=5",
+					"host": ["{{BASE_URL}}"],
+					"path": ["api", "attempts"],
+					"query": [
+						{
+							"key": "limit",
+							"value": "5",
+							"description": "Number of attempts to return (default: 5)"
+						}
+					]
+				},
+				"description": "Get the user's recent attempt history"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:3000",
+			"description": "Base URL for the API"
+		},
+		{
+			"key": "DRILL_ID",
+			"value": "65a1b2c3d4e5f6g7h8i9j0k1",
+			"description": "ID of a drill for testing"
+		},
+		{
+			"key": "AUTH_TOKEN",
+			"value": "",
+			"description": "Authentication token for protected endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// This script runs before each request",
+					"console.log('Running request: ' + pm.request.name);",
+					"",
+					"// You can add authentication logic here if needed",
+					"// For example, getting a fresh token from an auth endpoint"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// This script runs after each response",
+					"console.log('Response received for: ' + pm.request.name);",
+					"",
+					"// Basic response validation",
+					"pm.test('Status code is 2xx or 4xx', function () {",
+					"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 404, 429]);",
+					"});",
+					"",
+					"// Test specific endpoints",
+					"if (pm.request.name === 'Health Check') {",
+					"    pm.test('Health check returns {ok: true}', function () {",
+					"        const response = pm.response.json();",
+					"        pm.expect(response.ok).to.be.true;",
+					"    });",
+					"}",
+					"",
+					"if (pm.request.name === 'Get Drills List') {",
+					"    pm.test('Response contains drills array', function () {",
+					"        const response = pm.response.json();",
+					"        pm.expect(response).to.have.property('drills');",
+					"        pm.expect(response.drills).to.be.an('array');",
+					"    });",
+					"    ",
+					"    pm.test('Each drill has required properties', function () {",
+					"        const response = pm.response.json();",
+					"        response.drills.forEach(drill => {",
+					"            pm.expect(drill).to.have.property('id');",
+					"            pm.expect(drill).to.have.property('title');",
+					"            pm.expect(drill).to.have.property('difficulty');",
+					"            pm.expect(drill).to.have.property('tags');",
+					"        });",
+					"    });",
+					"}",
+					"",
+					"if (pm.request.name === 'Get Drill Detail') {",
+					"    if (pm.response.code === 200) {",
+					"        pm.test('Drill detail contains questions', function () {",
+					"            const response = pm.response.json();",
+					"            pm.expect(response).to.have.property('questions');",
+					"            pm.expect(response.questions).to.be.an('array');",
+					"            pm.expect(response.questions.length).to.eql(5);",
+					"        });",
+					"        ",
+					"        pm.test('Each question has required properties', function () {",
+					"            const response = pm.response.json();",
+					"            response.questions.forEach(question => {",
+					"                pm.expect(question).to.have.property('id');",
+					"                pm.expect(question).to.have.property('prompt');",
+					"                pm.expect(question).to.have.property('keywords');",
+					"            });",
+					"        });",
+					"    }",
+					"}",
+					"",
+					"if (pm.request.name === 'Submit Attempt') {",
+					"    if (pm.response.code === 200) {",
+					"        pm.test('Attempt submission returns score', function () {",
+					"            const response = pm.response.json();",
+					"            pm.expect(response).to.have.property('score');",
+					"            pm.expect(response.score).to.be.a('number');",
+					"            pm.expect(response.score).to.be.within(0, 100);",
+					"        });",
+					"        ",
+					"        pm.test('Attempt submission returns details', function () {",
+					"            const response = pm.response.json();",
+					"            pm.expect(response).to.have.property('details');",
+					"            pm.expect(response.details).to.be.an('array');",
+					"        });",
+					"    }",
+					"}",
+					"",
+					"if (pm.request.name === 'Get User Attempts') {",
+					"    if (pm.response.code === 200) {",
+					"        pm.test('Response contains attempts array', function () {",
+					"            const response = pm.response.json();",
+					"            pm.expect(response).to.have.property('attempts');",
+					"            pm.expect(response.attempts).to.be.an('array');",
+					"        });",
+					"        ",
+					"        pm.test('Each attempt has required properties', function () {",
+					"            const response = pm.response.json();",
+					"            response.attempts.forEach(attempt => {",
+					"                pm.expect(attempt).to.have.property('id');",
+					"                pm.expect(attempt).to.have.property('drill');",
+					"                pm.expect(attempt).to.have.property('score');",
+					"                pm.expect(attempt).to.have.property('createdAt');",
+					"            });",
+					"        });",
+					"    }",
+					"}"
+				]
+			}
+		}
+	]
+}
